@@ -1,46 +1,31 @@
 const express = require("express");
+const connectDB = require("./config/database");
 const app = express();
-const { adminAuth, userAuth } = require("./middleware/auth");
+const User = require("./modules/user");
 
-// app.use("/admin", adminAuth);
+app.post("/signup", async (req, res) => {
+  const user = new User({
+    firstName: "Ishika",
+    lastName: "Goel",
+    emailId: "ishika@goel123",
+    password: "ishika@123",
+  });
 
-// app.post("/user/login", (req, res) => {
-//   res.send("User login successfully...");
-// });
-
-// app.get("/user/data", userAuth, (req, res) => {
-//   res.send("User data sent...");
-// });
-
-// app.get("/admin/getAllData", (req, res) => {
-//   res.send("Authorized user...");
-// });
-
-// app.get("/admin/deleteAllData", (req, res) => {
-//   res.send("deleted data...");
-// });
-
-app.use("/", (err, req, res, next) => {
-  if (err) {
-    res.status(500).send("something went wrong...");
+  try {
+    await user.save();
+    res.send("User added successfully...");
+  } catch (err) {
+    res.status(400).send("Error saving user to database: " + err.message);
   }
 });
 
-app.get("/getUserData", (req, res) => {
-//   try {
-    throw new Error("efgkufq");
-    res.send("user data sent...");
-//   } catch (err) {
-//     res.status(500).send("Something cannot be detected...");
-//   }
-});
-
-app.use("/", (err, req, res, next) => {
-  if (err) {
-    res.status(500).send("something went wrong...");
-  }
-});
-
-app.listen(7777, () => {
-  console.log("Server is successfully running on port 7777...");
-});
+connectDB()
+  .then(() => {
+    console.log("Database connection established...");
+    app.listen(7777, () => {
+      console.log("Server is successfully running on port 7777...");
+    });
+  })
+  .catch((err) => {
+    console.log("Database cannot be connected...");
+  });
