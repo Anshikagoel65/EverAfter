@@ -3,19 +3,71 @@ const connectDB = require("./config/database");
 const app = express();
 const User = require("./modules/user");
 
+app.use(express.json());
+
 app.post("/signup", async (req, res) => {
-  const user = new User({
-    firstName: "Ishika",
-    lastName: "Goel",
-    emailId: "ishika@goel123",
-    password: "ishika@123",
-  });
+  const user = new User(req.body);
 
   try {
     await user.save();
     res.send("User added successfully...");
   } catch (err) {
     res.status(400).send("Error saving user to database: " + err.message);
+  }
+});
+
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.emailId;
+  try {
+    const user = await User.findOne({ emailId: userEmail });
+    if (!user) {
+      res.status(404).send("User not found...");
+    } else {
+      res.send(user);
+    }
+
+    const users = await User.find({ emailId: userEmail });
+    if (users.length === 0) {
+      res.status(404).send("User not found...");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wong...");
+  }
+});
+
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.send(users);
+  } catch (err) {
+    res.status(400).send("Something went wong...");
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    const user = await User.findByIdAndDelete({ _id: userId });
+    //const user = await User.findByIdAndDelete(userId);
+    res.send("User deleted successfully...");
+  } catch (err) {
+    res.status(400).send("Something went wong...");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+      returnDocument: "before",
+    });
+    console.log(user);
+    res.send("User updated successfully...");
+  } catch (err) {
+    res.status(400).send("Something went wong...");
   }
 });
 
